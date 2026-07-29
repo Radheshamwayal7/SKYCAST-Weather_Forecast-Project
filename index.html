@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SkyCast | Weather Forecast</title>
+    <link rel="icon" type="image/png" href="images/SKYCAST-FEVICON1.png">
+
+    <!-- CSS File -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Weather Card -->
+        <div class="weather-card">
+
+            <!-- Project Title -->
+            <h1>Weather Forecast</h1>
+
+            <!-- Search Section -->
+            <div class="search-box">
+
+            <input
+                type="text"
+                id="city"
+                placeholder="Enter City Name">
+
+            <button id="search-btn">
+                Search
+            </button>
+
+            <button id="location-btn">
+                📍 My Location
+            </button>   
+
+        </div>
+
+            <!-- Weather Information -->
+            <div class="weather-info">
+
+              <img
+                    id="weather-icon"
+                    alt="Weather Icon">
+
+                <h2 id="city-name">Pune</h2>
+
+                <h1 id="temperature">25°C</h1>
+
+                <p id="condition">Clear Sky</p>
+
+                <p id="date-time"></p>
+
+                <div class="details">
+
+                    <div class="detail-box">
+                        <h3>Humidity</h3>
+                        <p id="humidity">60%</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Wind</h3>
+                        <p id="wind">10 km/h</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Pressure</h3>
+                        <p id="pressure">1012 hPa</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Feels Like</h3>
+                        <p id="feels-like">27°C</p>
+                    </div>
+                    <div class="detail-box">
+                        <h3>Sunrise</h3>
+                        <p id="sunrise">--</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Sunset</h3>
+                        <p id="sunset">--</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Min Temp</h3>
+                        <p id="min-temp">--°C</p>
+                    </div>
+
+                    <div class="detail-box">
+                        <h3>Max Temp</h3>
+                        <p id="max-temp">--°C</p>
+                    </div>
+                </div>
+            </div>
+            </div>
+    <!-- JavaScript File -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
