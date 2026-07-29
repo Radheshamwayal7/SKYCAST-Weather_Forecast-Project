@@ -1,34 +1,32 @@
 # 🌤️ SkyCast - Weather Forecast
 
-SkyCast is a responsive Weather Forecast web application that provides real-time weather information using the OpenWeather API. Users can search for any city worldwide or get weather details based on their current location.
+SkyCast is a responsive Weather Forecast web application that provides real-time weather information using the OpenWeather API. Users can search weather by city name or fetch weather data based on their current location using the browser's Geolocation API.
+
+---
 
 ## 🚀 Live Demo
 
 🌐 https://radheshamwayal7.github.io/SKYCAST-Weather_Forecast-Project/
 
-## 📂 GitHub Repository
-
-🔗 https://github.com/Radheshamwayal7/SKYCAST-Weather_Forecast-Project
-
 ---
 
-## ✨ Features
+## 📌 Features
 
 - 🔍 Search weather by city name
 - 📍 Current location weather
 - 🌡️ Current temperature
-- 🌤️ Weather condition & icon
+- 🌤️ Weather condition with dynamic icon
 - 💧 Humidity
-- 💨 Wind speed
-- 📊 Atmospheric pressure
-- 🤗 Feels Like temperature
-- 🌅 Sunrise time
-- 🌇 Sunset time
-- 📉 Minimum temperature
-- 📈 Maximum temperature
-- 📅 Current date & time
-- 📱 Responsive design
-- ⚠️ Error handling for invalid city names
+- 💨 Wind Speed
+- 📊 Atmospheric Pressure
+- 🤗 Feels Like Temperature
+- 🌅 Sunrise Time
+- 🌇 Sunset Time
+- 📉 Minimum Temperature
+- 📈 Maximum Temperature
+- 📅 Current Date & Time
+- 📱 Fully Responsive Design
+- ⚠️ Error Handling for Invalid City Names
 
 ---
 
@@ -38,7 +36,8 @@ SkyCast is a responsive Weather Forecast web application that provides real-time
 - CSS3
 - JavaScript (ES6)
 - OpenWeather API
-- Git & GitHub
+- Git
+- GitHub
 - GitHub Pages
 
 ---
@@ -46,7 +45,7 @@ SkyCast is a responsive Weather Forecast web application that provides real-time
 ## 📁 Project Structure
 
 ```text
-SKYCAST-Weather_Forecast-Project
+SKYCAST-Weather_Forecast-Project/
 │
 ├── images/
 ├── index.html
@@ -57,17 +56,23 @@ SKYCAST-Weather_Forecast-Project
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Getting Started
 
-1. Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Radheshamwayal7/SKYCAST-Weather_Forecast-Project.git
 ```
 
-2. Open the project folder.
+### 2. Open the project folder
 
-3. Open `index.html` in your browser.
+```bash
+cd SKYCAST-Weather_Forecast-Project
+```
+
+### 3. Run the project
+
+Open `index.html` in your browser.
 
 ---
 
@@ -79,14 +84,27 @@ https://openweathermap.org/api
 
 ---
 
+## 📖 What I Learned
+
+- Working with REST APIs
+- Fetch API using Async/Await
+- DOM Manipulation
+- JavaScript Event Handling
+- Browser Geolocation API
+- Responsive Web Design
+- Git & GitHub Workflow
+- Deploying Projects with GitHub Pages
+
+---
+
 ## 👨‍💻 Author
 
 **Radhesham Wayal**
 
-GitHub: https://github.com/Radheshamwayal7
+- GitHub: https://github.com/Radheshamwayal7
 
 ---
 
 ## ⭐ Support
 
-If you like this project, consider giving it a ⭐ on GitHub.
+If you found this project useful, please consider giving it a ⭐ on GitHub.
