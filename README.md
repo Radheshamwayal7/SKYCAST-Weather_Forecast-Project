@@ -56,34 +56,6 @@ SKYCAST-Weather_Forecast-Project/
 
 ---
 
-## ⚙️ Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/Radheshamwayal7/SKYCAST-Weather_Forecast-Project.git
-```
-
-### 2. Open the project folder
-
-```bash
-cd SKYCAST-Weather_Forecast-Project
-```
-
-### 3. Run the project
-
-Open `index.html` in your browser.
-
----
-
-## 🌐 API Used
-
-**OpenWeather API**
-
-https://openweathermap.org/api
-
----
-
 ## 📖 What I Learned
 
 - Working with REST APIs
@@ -105,6 +77,4 @@ https://openweathermap.org/api
 
 ---
 
-## ⭐ Support
-
-If you found this project useful, please consider giving it a ⭐ on GitHub.
+## "Empowering everyday decisions with real-time weather information."
