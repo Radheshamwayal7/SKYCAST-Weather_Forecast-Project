@@ -1,6 +1,6 @@
-# 🌤️ SkyCast - Weather Forecast
+# 🌦️ SkyCast — Weather Forecast
 
-SkyCast is a responsive Weather Forecast web application that provides real-time weather information using the OpenWeather API. Users can search weather by city name or fetch weather data based on their current location using the browser's Geolocation API.
+SkyCast is a modern, responsive weather forecast web application featuring a live radar-console inspired interface with real-time weather updates. The application retrieves weather information using the OpenWeather API through city search or the user's current location. Its dynamic UI automatically adapts accent colors and visual effects based on current weather conditions, creating an engaging user experience.
 
 ---
 
@@ -13,41 +13,34 @@ SkyCast is a responsive Weather Forecast web application that provides real-time
 ## 📌 Features
 
 - 🔍 Search weather by city name
-- 📍 Current location weather
-- 🌡️ Current temperature
-- 🌤️ Weather condition with dynamic icon
-- 💧 Humidity
-- 💨 Wind Speed
-- 📊 Atmospheric Pressure
-- 🤗 Feels Like Temperature
-- 🌅 Sunrise Time
-- 🌇 Sunset Time
-- 📉 Minimum Temperature
-- 📈 Maximum Temperature
-- 📅 Current Date & Time
-- 📱 Fully Responsive Design
-- ⚠️ Error Handling for Invalid City Names
+- 📍 Get weather using your current location (Geolocation API)
+- 🌡️ Display current temperature, minimum & maximum temperature, and         feels-like temperature
+- 🛰️ Dynamic radar animation and weather-based theme colors
+- 💧 Humidity, 💨 Wind Speed, and 📊 Atmospheric Pressure
+- 🌅 Sunrise & 🌇 Sunset timings
+- 📅 Live Date & Time
+- ⏳ Loading indicator while fetching weather data
+- ⚠️ User-friendly error handling for invalid city names and location permission denial
+- 📱 Fully responsive design for desktop, tablet, and mobile devices
 
 ---
 
-## 🛠️ Technologies Used
+## 🛠️ Built With
 
 - HTML5
-- CSS3
-- JavaScript (ES6)
+- CSS3 (Custom Properties, Radial & Conic Gradients)
+- JavaScript (ES6, Async/Await, Fetch API)
 - OpenWeather API
-- Git
-- GitHub
-- GitHub Pages
 
 ---
 
 ## 📁 Project Structure
 
-```text
+
 SKYCAST-Weather_Forecast-Project/
 │
 ├── images/
+│   └── FAVICON-SKYCAST.png
 ├── index.html
 ├── style.css
 ├── script.js
@@ -58,14 +51,14 @@ SKYCAST-Weather_Forecast-Project/
 
 ## 📖 What I Learned
 
-- Working with REST APIs
-- Fetch API using Async/Await
-- DOM Manipulation
-- JavaScript Event Handling
-- Browser Geolocation API
-- Responsive Web Design
-- Git & GitHub Workflow
-- Deploying Projects with GitHub Pages
+- Integrating REST APIs into web applications
+- Working with the Fetch API using Async/Await
+- DOM Manipulation and Event Handling
+- Using the Browser Geolocation API
+- Creating dynamic UI themes based on live data
+- Advanced CSS animations and responsive layouts
+- Git & GitHub version control
+- Deploying static websites with GitHub Pages
 
 ---
 
@@ -77,4 +70,10 @@ SKYCAST-Weather_Forecast-Project/
 
 ---
 
-## "Empowering everyday decisions with real-time weather information."
+## 📄 License
+
+This project is open-source and intended for educational and portfolio purposes.
+
+---
+
+> *"Empowering everyday decisions with real-time weather insights."*
