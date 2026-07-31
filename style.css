@@ -1,4 +1,3 @@
-
 :root {
     --void: #080B12;
     --panel: #10151F;
@@ -133,10 +132,10 @@ body {
     font-family: var(--font-body);
     font-weight: 600;
     font-size: 14px;
-    padding: 0 22px;
+    padding: 14px 26px;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     white-space: nowrap;
 }
 
@@ -147,12 +146,25 @@ body {
 }
 
 #search-btn:hover {
-    filter: brightness(1.08);
+    filter: brightness(1.15);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -8px var(--accent-soft), 0 6px 14px -6px rgba(0, 0, 0, 0.5);
+}
+
+#search-btn:active {
+    transform: translateY(-1px);
 }
 
 #location-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+}
+
+#location-btn:active {
+    transform: translateY(-1px);
 }
 
 .search-box button:disabled {
@@ -164,9 +176,7 @@ body {
     margin-right: 4px;
 }
 
-/* ==========================================================================
-   Hero — icon, radar sweep, temperature readout
-   ========================================================================== */
+
 
 .weather-info {
     text-align: center;
@@ -180,12 +190,22 @@ body {
     padding: 28px 0 40px;
 }
 
+
+.icon-stage {
+    position: relative;
+    width: 190px;
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .hero-radar {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 300px;
-    height: 300px;
+    width: 100%;
+    height: 100%;
     transform: translate(-50%, -50%);
     z-index: 0;
     pointer-events: none;
@@ -217,7 +237,7 @@ body {
 }
 
 #weather-icon {
-    width: 150px;
+    width: 130px;
     position: relative;
     z-index: 1;
     filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
@@ -264,9 +284,6 @@ body {
     transition: color 0.6s ease;
 }
 
-/* ==========================================================================
-   Detail grid — instrument panel readouts
-   ========================================================================== */
 
 .details {
     display: grid;
@@ -285,7 +302,9 @@ body {
 
 .detail-box:hover {
     border-color: var(--accent);
-    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 14px 28px -12px var(--accent-soft), 0 8px 16px -8px rgba(0, 0, 0, 0.5);
 }
 
 .detail-box h3 {
@@ -305,9 +324,85 @@ body {
     color: var(--ink-100);
 }
 
-/* ==========================================================================
-   Responsive
-   ========================================================================== */
+
+
+.toast-stack {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    width: 100%;
+    max-width: 420px;
+    padding: 0 16px;
+}
+
+.toast {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--panel-border);
+    border-left: 3px solid var(--accent);
+    color: var(--ink-100);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 40px -14px rgba(0, 0, 0, 0.6);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(-16px) scale(0.97);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.toast.is-leaving {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+}
+
+.toast-icon {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.toast--error {
+    border-left-color: #FF6B6B;
+}
+
+.toast--error .toast-icon {
+    color: #FF6B6B;
+}
+
+.toast--success {
+    border-left-color: var(--accent);
+}
+
+.toast--success .toast-icon {
+    color: var(--accent);
+}
+
+@media (max-width: 560px) {
+    .toast-stack {
+        top: 14px;
+    }
+}
+
+
 
 @media (max-width: 720px) {
     .details {
@@ -334,13 +429,13 @@ body {
         font-size: 72px;
     }
 
-    .hero-radar {
-        width: 240px;
-        height: 240px;
+    .icon-stage {
+        width: 150px;
+        height: 150px;
     }
 
     #weather-icon {
-        width: 120px;
+        width: 105px;
     }
 }
 
