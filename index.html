@@ -8,53 +8,74 @@
     <title>SkyCast | Weather Forecast</title>
     <link rel="icon" type="image/png" href="images/FAVICON-SKYCAST.png">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
     <!-- CSS File -->
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+    <!-- Ambient radar backdrop -->
+    <div class="radar-field" aria-hidden="true"></div>
+
     <!-- Main Container -->
     <div class="container">
 
         <!-- Weather Card -->
-        <div class="weather-card">
+        <div class="weather-card" id="weather-card">
 
-            <!-- Project Title -->
-            <h1>Weather Forecast</h1>
+            <header class="console-header">
+                <p class="eyebrow">Live Atmospheric Readout</p>
+                <h1>SkyCast Weather Forecast</h1>
+            </header>
 
             <!-- Search Section -->
             <div class="search-box">
 
-            <input
-                type="text"
-                id="city"
-                placeholder="Enter City Name">
+                <input
+                    type="text"
+                    id="city"
+                    placeholder="Search a city&hellip;"
+                    autocomplete="off">
 
-            <button id="search-btn">
-                Search
-            </button>
+                <button id="search-btn">
+                    Search
+                </button>
 
-            <button id="location-btn">
-                📍 My Location
-            </button>   
+                <button id="location-btn">
+                    <span class="pin">📍</span> My Location
+                </button>
 
-        </div>
+            </div>
 
             <!-- Weather Information -->
             <div class="weather-info">
 
-              <img
-                    id="weather-icon"
-                    alt="Weather Icon">
+                <div class="hero">
 
-                <h2 id="city-name">Pune</h2>
+                    <div class="hero-radar" aria-hidden="true">
+                        <span class="ring ring-1"></span>
+                        <span class="ring ring-2"></span>
+                        <span class="ring ring-3"></span>
+                        <span class="sweep"></span>
+                    </div>
 
-                <h1 id="temperature">25°C</h1>
+                    <img
+                        id="weather-icon"
+                        alt="Weather Icon">
 
-                <p id="condition">Clear Sky</p>
+                    <div class="hero-readout">
+                        <h2 id="city-name">Pune</h2>
+                        <p id="date-time"></p>
+                        <h1 id="temperature">25°C</h1>
+                        <p id="condition">Clear Sky</p>
+                    </div>
 
-                <p id="date-time"></p>
+                </div>
 
                 <div class="details">
 
@@ -98,7 +119,8 @@
                     </div>
                 </div>
             </div>
-            </div>
+        </div>
+    </div>
     <!-- JavaScript File -->
     <script src="script.js"></script>
 
