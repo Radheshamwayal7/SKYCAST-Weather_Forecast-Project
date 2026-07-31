@@ -22,6 +22,9 @@
     <!-- Ambient radar backdrop -->
     <div class="radar-field" aria-hidden="true"></div>
 
+    <!-- Toast / popper notifications -->
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
     <!-- Main Container -->
     <div class="container">
 
@@ -57,16 +60,18 @@
 
                 <div class="hero">
 
-                    <div class="hero-radar" aria-hidden="true">
-                        <span class="ring ring-1"></span>
-                        <span class="ring ring-2"></span>
-                        <span class="ring ring-3"></span>
-                        <span class="sweep"></span>
-                    </div>
+                    <div class="icon-stage">
+                        <div class="hero-radar" aria-hidden="true">
+                            <span class="ring ring-1"></span>
+                            <span class="ring ring-2"></span>
+                            <span class="ring ring-3"></span>
+                            <span class="sweep"></span>
+                        </div>
 
-                    <img
-                        id="weather-icon"
-                        alt="Weather Icon">
+                        <img
+                            id="weather-icon"
+                            alt="Weather Icon">
+                    </div>
 
                     <div class="hero-readout">
                         <h2 id="city-name">Pune</h2>
