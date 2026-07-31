@@ -40,6 +40,42 @@ function setMood(weatherMain) {
     document.documentElement.style.setProperty("--accent-soft", mood.soft);
 }
 
+const toastStack = document.getElementById("toast-stack");
+
+function showToast(message, type = "error") {
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast--${type}`;
+
+    const icon = document.createElement("span");
+    icon.className = "toast-icon";
+    icon.textContent = type === "success" ? "✓" : "⚠";
+
+    const text = document.createElement("span");
+    text.textContent = message;
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    toastStack.appendChild(toast);
+
+    // Trigger enter transition
+    requestAnimationFrame(function () {
+        toast.classList.add("is-visible");
+    });
+
+    const remove = function () {
+        toast.classList.add("is-leaving");
+        toast.classList.remove("is-visible");
+        toast.addEventListener("transitionend", function () {
+            toast.remove();
+        }, { once: true });
+    };
+
+    setTimeout(remove, 3800);
+    toast.addEventListener("click", remove);
+
+}
+
 function setLoading(isLoading) {
     card.classList.toggle("is-loading", isLoading);
     searchBtn.disabled = isLoading;
@@ -51,7 +87,7 @@ searchBtn.addEventListener("click", function () {
     const city = cityInput.value.trim();
 
     if (city === "") {
-        alert("Please enter a city name.");
+        showToast("Please enter a city name.");
         return;
     }
 
@@ -68,7 +104,7 @@ locationBtn.addEventListener("click", function () {
 
     } else {
 
-        alert("Geolocation is not supported.");
+        showToast("Geolocation is not supported.");
 
     }
 
@@ -153,11 +189,12 @@ async function getWeather(city) {
         console.log(data);
 
         if (response.ok === false) {
-            alert(data.message);
+            showToast(data.message || "City not found.");
             return;
         }
 
         renderWeather(data);
+        showToast(`Forecast updated for ${data.name}`, "success");
 
     }
 
@@ -165,7 +202,7 @@ async function getWeather(city) {
 
         console.log(error);
 
-        alert("Something went wrong.");
+        showToast("Something went wrong.");
 
     }
 
@@ -192,9 +229,9 @@ function showLocationError(error) {
     setLoading(false);
 
     if (error.code === error.PERMISSION_DENIED) {
-        alert("Location access was denied. Please allow location access or search by city instead.");
+        showToast("Location access was denied. Please allow location access or search by city instead.");
     } else {
-        alert("Unable to retrieve your location.");
+        showToast("Unable to retrieve your location.");
     }
 
 }
@@ -211,11 +248,12 @@ async function getWeatherByLocation(latitude, longitude) {
         const data = await response.json();
 
         if (response.ok === false) {
-            alert(data.message);
+            showToast(data.message || "Unable to get location weather.");
             return;
         }
 
         renderWeather(data);
+        showToast(`Forecast updated for ${data.name}`, "success");
 
     }
 
@@ -223,7 +261,7 @@ async function getWeatherByLocation(latitude, longitude) {
 
         console.log(error);
 
-        alert("Unable to get location weather.");
+        showToast("Unable to get location weather.");
 
     }
 
