@@ -100,7 +100,17 @@ locationBtn.addEventListener("click", function () {
     if (navigator.geolocation) {
 
         setLoading(true);
-        navigator.geolocation.getCurrentPosition(showPosition, showLocationError);
+        showToast("Locating you — this can take a moment outside cities…", "success");
+
+        navigator.geolocation.getCurrentPosition(
+            showPosition,
+            showLocationError,
+            {
+                enableHighAccuracy: true, // use real GPS, not coarse cell/Wi-Fi triangulation
+                timeout: 15000,           // fail after 15s instead of hanging indefinitely
+                maximumAge: 0             // don't reuse a stale cached fix
+            }
+        );
 
     } else {
 
@@ -176,12 +186,29 @@ function renderWeather(data) {
 
 async function getWeather(city) {
 
-    const url =
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-
     setLoading(true);
 
     try {
+
+        // Step 1: resolve the place name to coordinates using the
+        // Geocoding API — this has far better coverage of small
+        // villages/towns than the old q= city-name lookup below.
+        const geoUrl =
+            `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${apiKey}`;
+
+        const geoResponse = await fetch(geoUrl);
+        const geoData = await geoResponse.json();
+
+        if (geoResponse.ok === false || geoData.length === 0) {
+            showToast(`Couldn't find "${city}". Try adding the district/state, e.g. "${city}, Maharashtra".`);
+            return;
+        }
+
+        const { lat, lon, name, state } = geoData[0];
+
+        // Step 2: fetch the actual weather for those coordinates.
+        const url =
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
 
         const response = await fetch(url);
 
@@ -189,9 +216,13 @@ async function getWeather(city) {
         console.log(data);
 
         if (response.ok === false) {
-            showToast(data.message || "City not found.");
+            showToast(data.message || "Something went wrong.");
             return;
         }
+
+        // Prefer the geocoder's resolved name (e.g. village + state)
+        // since it's often more precise than what the weather API returns.
+        data.name = state ? `${name}, ${state}` : name;
 
         renderWeather(data);
         showToast(`Forecast updated for ${data.name}`, "success");
@@ -230,6 +261,10 @@ function showLocationError(error) {
 
     if (error.code === error.PERMISSION_DENIED) {
         showToast("Location access was denied. Please allow location access or search by city instead.");
+    } else if (error.code === error.TIMEOUT) {
+        showToast("GPS is taking too long — weak signal here. Try again or search by city.");
+    } else if (error.code === error.POSITION_UNAVAILABLE) {
+        showToast("Couldn't determine your position. Try again in open sky, or search by city.");
     } else {
         showToast("Unable to retrieve your location.");
     }
