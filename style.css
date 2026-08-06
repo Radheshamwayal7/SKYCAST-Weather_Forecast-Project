@@ -421,6 +421,12 @@ body {
         padding: 28px 18px;
     }
 
+    .console-header h1 {
+        font-size: 28px;
+        line-height: 1.2;
+        text-align: center;
+    }
+
     .search-box {
         flex-direction: column;
     }
