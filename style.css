@@ -420,9 +420,9 @@ body {
         min-height: 100vh;
         padding: 28px 18px;
     }
-    
+
     .console-header h1 {
-        font-size: 28px;
+        font-size: 30px;
         line-height: 1.2;
         text-align: center;
     }
