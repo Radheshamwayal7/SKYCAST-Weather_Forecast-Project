@@ -76,4 +76,4 @@ This project is open-source and intended for educational and portfolio purposes.
 
 ---
 
-> *"Empowering everyday decisions with real-time weather insights."*
+> *"Empowering everyday decisions with real-time weather insights ."*
