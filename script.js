@@ -5,7 +5,6 @@ const cityInput = document.getElementById("city");
 const searchBtn = document.getElementById("search-btn");
 const locationBtn = document.getElementById("location-btn");
 const card = document.getElementById("weather-card");
-const suggestionsList = document.getElementById("suggestions");
 
 const cityName = document.getElementById("city-name");
 const temperature = document.getElementById("temperature");
@@ -83,239 +82,6 @@ function setLoading(isLoading) {
     locationBtn.disabled = isLoading;
 }
 
-// ==========================================================================
-// Search suggestions (autocomplete)
-// ==========================================================================
-
-let suggestionItems = [];
-let activeSuggestionIndex = -1;
-let suggestionsRequestId = 0;
-
-function hideSuggestions() {
-    suggestionsList.hidden = true;
-    suggestionsList.innerHTML = "";
-    suggestionItems = [];
-    activeSuggestionIndex = -1;
-}
-
-function renderSuggestions(items, state) {
-
-    suggestionsList.innerHTML = "";
-
-    if (state === "loading") {
-        const li = document.createElement("li");
-        li.className = "is-loading";
-        li.textContent = "Searching…";
-        suggestionsList.appendChild(li);
-        suggestionsList.hidden = false;
-        return;
-    }
-
-    if (items.length === 0) {
-        const li = document.createElement("li");
-        li.className = "is-empty";
-        li.textContent = "No matches — try adding a district or state.";
-        suggestionsList.appendChild(li);
-        suggestionsList.hidden = false;
-        return;
-    }
-
-    items.forEach(function (item, index) {
-
-        const li = document.createElement("li");
-        li.dataset.index = index;
-
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "s-name";
-        nameSpan.textContent = item.label;
-
-        li.appendChild(nameSpan);
-
-        if (item.region) {
-            const regionSpan = document.createElement("span");
-            regionSpan.className = "s-region";
-            regionSpan.textContent = item.region;
-            li.appendChild(regionSpan);
-        }
-
-        li.addEventListener("mousedown", function (event) {
-            // mousedown (not click) so it fires before the input's blur event
-            event.preventDefault();
-            selectSuggestion(item);
-        });
-
-        suggestionsList.appendChild(li);
-
-    });
-
-    suggestionsList.hidden = false;
-
-}
-
-function dedupePlaces(places) {
-    const seen = new Set();
-    const result = [];
-    for (const p of places) {
-        const key = `${p.lat.toFixed(2)},${p.lon.toFixed(2)}`;
-        if (!seen.has(key)) {
-            seen.add(key);
-            result.push(p);
-        }
-    }
-    return result;
-}
-
-async function fetchSuggestionCandidates(query) {
-
-    const results = [];
-
-    // OpenWeatherMap geocoding — good for cities/towns, fast.
-    try {
-        const owmUrl =
-            `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${apiKey}`;
-        const owmResponse = await fetch(owmUrl);
-        const owmData = await owmResponse.json();
-
-        if (owmResponse.ok) {
-            owmData.forEach(function (place) {
-                results.push({
-                    lat: place.lat,
-                    lon: place.lon,
-                    label: place.name,
-                    region: [place.state, place.country].filter(Boolean).join(", ")
-                });
-            });
-        }
-    } catch (error) {
-        console.log(error);
-    }
-
-    // OpenStreetMap Nominatim — better coverage of small villages.
-    // Only bother calling it if OWM came back thin, to respect Nominatim's
-    // strict rate limit (~1 request/sec) for this free public service.
-    if (results.length < 3) {
-        try {
-            const nomUrl =
-                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`;
-            const nomResponse = await fetch(nomUrl);
-            const nomData = await nomResponse.json();
-
-            nomData.forEach(function (match) {
-                const addr = match.address || {};
-                const place = addr.village || addr.town || addr.city || addr.hamlet || match.display_name.split(",")[0];
-                const region = [addr.state, addr.country].filter(Boolean).join(", ");
-
-                results.push({
-                    lat: parseFloat(match.lat),
-                    lon: parseFloat(match.lon),
-                    label: place,
-                    region
-                });
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    return dedupePlaces(results).slice(0, 6);
-
-}
-
-function selectSuggestion(item) {
-
-    cityInput.value = item.label;
-    hideSuggestions();
-
-    fetchWeatherForPlace({ lat: item.lat, lon: item.lon, name: item.region ? `${item.label}, ${item.region.split(",")[0]}` : item.label });
-
-}
-
-function updateActiveSuggestion(newIndex) {
-
-    const children = Array.from(suggestionsList.children);
-    children.forEach(function (child) {
-        child.classList.remove("is-active");
-    });
-
-    if (newIndex >= 0 && newIndex < suggestionItems.length) {
-        activeSuggestionIndex = newIndex;
-        children[newIndex].classList.add("is-active");
-        children[newIndex].scrollIntoView({ block: "nearest" });
-    } else {
-        activeSuggestionIndex = -1;
-    }
-
-}
-
-const debouncedSuggest = debounce(async function (query) {
-
-    const requestId = ++suggestionsRequestId;
-
-    renderSuggestions([], "loading");
-
-    const items = await fetchSuggestionCandidates(query);
-
-    if (requestId !== suggestionsRequestId) return; // a newer keystroke superseded this request
-
-    suggestionItems = items;
-    activeSuggestionIndex = -1;
-    renderSuggestions(items);
-
-}, 350);
-
-function debounce(fn, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(function () {
-            fn(...args);
-        }, delay);
-    };
-}
-
-cityInput.addEventListener("input", function () {
-
-    const query = cityInput.value.trim();
-
-    if (query.length < 2) {
-        hideSuggestions();
-        return;
-    }
-
-    debouncedSuggest(query);
-
-});
-
-cityInput.addEventListener("keydown", function (event) {
-
-    if (suggestionsList.hidden) return;
-
-    if (event.key === "ArrowDown") {
-        event.preventDefault();
-        updateActiveSuggestion(Math.min(activeSuggestionIndex + 1, suggestionItems.length - 1));
-    } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        updateActiveSuggestion(Math.max(activeSuggestionIndex - 1, 0));
-    } else if (event.key === "Escape") {
-        hideSuggestions();
-    } else if (event.key === "Enter" && activeSuggestionIndex >= 0) {
-        event.preventDefault();
-        selectSuggestion(suggestionItems[activeSuggestionIndex]);
-    }
-
-});
-
-cityInput.addEventListener("blur", function () {
-    // slight delay so a mousedown-selected suggestion still registers
-    setTimeout(hideSuggestions, 100);
-});
-
-document.addEventListener("click", function (event) {
-    if (!event.target.closest(".input-wrap")) {
-        hideSuggestions();
-    }
-});
-
 searchBtn.addEventListener("click", function () {
 
     const city = cityInput.value.trim();
@@ -325,7 +91,6 @@ searchBtn.addEventListener("click", function () {
         return;
     }
 
-    hideSuggestions();
     getWeather(city);
 
 });
@@ -355,10 +120,10 @@ locationBtn.addEventListener("click", function () {
 
 });
 
-// Press Enter to Search (falls through only when no suggestion is highlighted)
+// Press Enter to Search
 cityInput.addEventListener("keypress", function (event) {
 
-    if (event.key === "Enter" && activeSuggestionIndex < 0) {
+    if (event.key === "Enter") {
         searchBtn.click();
     }
 
@@ -419,57 +184,29 @@ function renderWeather(data) {
 
 }
 
-// Resolves a place name to coordinates.
-// 1) Try OpenWeatherMap's Geocoding API first (fast, good for towns/cities).
-// 2) If that finds nothing, fall back to OpenStreetMap's Nominatim geocoder,
-//    which is built on community-mapped data and covers small Indian
-//    villages (like Awasari Khurd / Awasari Budruk) far more reliably.
-async function resolvePlace(city) {
-
-    const owmUrl =
-        `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${apiKey}`;
-
-    const owmResponse = await fetch(owmUrl);
-    const owmData = await owmResponse.json();
-
-    if (owmResponse.ok && owmData.length > 0) {
-        const { lat, lon, name, state } = owmData[0];
-        return { lat, lon, name: state ? `${name}, ${state}` : name };
-    }
-
-    // Fallback: Nominatim
-    const nominatimUrl =
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1&addressdetails=1`;
-
-    const nomResponse = await fetch(nominatimUrl);
-
-    if (!nomResponse.ok) return null;
-
-    const nomData = await nomResponse.json();
-
-    if (nomData.length === 0) return null;
-
-    const match = nomData[0];
-    const addr = match.address || {};
-    const place = addr.village || addr.town || addr.city || addr.hamlet || match.display_name.split(",")[0];
-    const state = addr.state;
-
-    return {
-        lat: parseFloat(match.lat),
-        lon: parseFloat(match.lon),
-        name: state ? `${place}, ${state}` : place
-    };
-
-}
-
-async function fetchWeatherForPlace(place) {
+async function getWeather(city) {
 
     setLoading(true);
 
     try {
 
-        const { lat, lon, name } = place;
+        // Step 1: resolve the place name to coordinates using the
+        // Geocoding API — this has far better coverage of small
+        // villages/towns than the old q= city-name lookup below.
+        const geoUrl =
+            `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${apiKey}`;
 
+        const geoResponse = await fetch(geoUrl);
+        const geoData = await geoResponse.json();
+
+        if (geoResponse.ok === false || geoData.length === 0) {
+            showToast(`Couldn't find "${city}". Try adding the district/state, e.g. "${city}, Maharashtra".`);
+            return;
+        }
+
+        const { lat, lon, name, state } = geoData[0];
+
+        // Step 2: fetch the actual weather for those coordinates.
         const url =
             `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
 
@@ -485,7 +222,7 @@ async function fetchWeatherForPlace(place) {
 
         // Prefer the geocoder's resolved name (e.g. village + state)
         // since it's often more precise than what the weather API returns.
-        data.name = name;
+        data.name = state ? `${name}, ${state}` : name;
 
         renderWeather(data);
         showToast(`Forecast updated for ${data.name}`, "success");
@@ -505,25 +242,6 @@ async function fetchWeatherForPlace(place) {
         setLoading(false);
 
     }
-
-}
-
-async function getWeather(city) {
-
-    setLoading(true);
-
-    const place = await resolvePlace(city).catch(function (error) {
-        console.log(error);
-        return null;
-    });
-
-    if (!place) {
-        setLoading(false);
-        showToast(`Couldn't find "${city}". Try adding the district/state, e.g. "${city}, Maharashtra".`);
-        return;
-    }
-
-    await fetchWeatherForPlace(place);
 
 }
 getWeather("Pune");
