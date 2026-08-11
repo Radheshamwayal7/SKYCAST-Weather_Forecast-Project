@@ -1,43 +1,46 @@
 console.log("JavaScript is connected");
 const apiKey = "7d2289effa09983a65e38dbb39eb93db";
 
-const countrySelect = document.getElementById("country");
-const cityInput = document.getElementById("city");
-const searchBtn = document.getElementById("search-btn");
-const locationBtn = document.getElementById("location-btn");
-const card = document.getElementById("weather-card");
-const cityListEl = document.getElementById("city-list");
+const countrySelect  = document.getElementById("country");
+const stateSelect    = document.getElementById("state");
+const districtSelect = document.getElementById("district");
+const cityInput      = document.getElementById("city");
+const searchBtn      = document.getElementById("search-btn");
+const locationBtn    = document.getElementById("location-btn");
+const card           = document.getElementById("weather-card");
+const cityListEl     = document.getElementById("city-list");
 
-const cityName = document.getElementById("city-name");
+const cityName    = document.getElementById("city-name");
 const temperature = document.getElementById("temperature");
-const condition = document.getElementById("condition");
-const dateTime = document.getElementById("date-time");
+const condition   = document.getElementById("condition");
+const dateTime    = document.getElementById("date-time");
 
-const humidity = document.getElementById("humidity");
-const wind = document.getElementById("wind");
-const pressure = document.getElementById("pressure");
-const feelsLike = document.getElementById("feels-like");
-const sunrise = document.getElementById("sunrise");
-const sunset = document.getElementById("sunset");
-const minTemp = document.getElementById("min-temp");
-const maxTemp = document.getElementById("max-temp");
+const humidity   = document.getElementById("humidity");
+const wind       = document.getElementById("wind");
+const pressure   = document.getElementById("pressure");
+const feelsLike  = document.getElementById("feels-like");
+const sunrise    = document.getElementById("sunrise");
+const sunset     = document.getElementById("sunset");
+const minTemp    = document.getElementById("min-temp");
+const maxTemp    = document.getElementById("max-temp");
 const weatherIcon = document.getElementById("weather-icon");
 
 // ---------------------------------------------------------------------
-// Country scope
+// Country / State / District scope
 //
-// India has hundreds of thousands of villages — no static list can
-// hold "every city and village", so for India the search reaches the
-// full live geocoding database (any city, town, or village). For
-// everywhere else, the dropdown itself IS the "most popular only"
-// filter: only well-known countries are listed, and once one is
-// picked, city search is scoped to just that country via the
-// Geocoding API's country-code parameter.
+// India: real dataset of all 35 states/UTs + 722 districts
+// (india-states-districts.json, sourced from public government data).
+// Selecting a State fills the District dropdown; selecting a District
+// scopes the free-text city/village search to that district via the
+// Geocoding API. Villages themselves can't be pre-loaded (India has
+// hundreds of thousands of them) so that part stays a live search —
+// but it's now scoped down to State + District, so results are tightly
+// relevant instead of "anywhere in India".
 //
-// This also fixes the original bug: typing random letters/words won't
-// match any real place within the selected country, so nothing gets
-// suggested and the search is rejected — no more "random city" results.
+// Foreign: a curated list of popular countries. Selecting one scopes
+// city search to that country only.
 // ---------------------------------------------------------------------
+
 const COUNTRIES = [
     { code: "IN", name: "India" },
     { code: "US", name: "United States" },
@@ -87,6 +90,9 @@ const COUNTRIES = [
     { code: "NP", name: "Nepal" }
 ];
 
+// Populated from india-states-districts.json at startup: { "Maharashtra": ["Pune", "Mumbai City", ...], ... }
+let INDIA_DATA = {};
+
 function populateCountryDropdown() {
     const fragment = document.createDocumentFragment();
     COUNTRIES.forEach(({ code, name }) => {
@@ -96,13 +102,106 @@ function populateCountryDropdown() {
         fragment.appendChild(option);
     });
     countrySelect.appendChild(fragment);
-    countrySelect.value = "IN"; // default scope
+    countrySelect.value = "IN";
 }
 populateCountryDropdown();
+
+function populateStateDropdown() {
+    stateSelect.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "All States";
+    stateSelect.appendChild(placeholder);
+
+    Object.keys(INDIA_DATA).sort().forEach(state => {
+        const option = document.createElement("option");
+        option.value = state;
+        option.textContent = state;
+        stateSelect.appendChild(option);
+    });
+}
+
+function populateDistrictDropdown(state) {
+    districtSelect.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "All Districts";
+    districtSelect.appendChild(placeholder);
+
+    if (!state || !INDIA_DATA[state]) return;
+
+    INDIA_DATA[state].slice().sort().forEach(district => {
+        const option = document.createElement("option");
+        option.value = district;
+        option.textContent = district;
+        districtSelect.appendChild(option);
+    });
+}
+
+// Loads the real India dataset (35 states/UTs, 722 districts)
+async function loadIndiaData() {
+    try {
+        const response = await fetch("india-states-districts.json");
+        INDIA_DATA = await response.json();
+        populateStateDropdown();
+    } catch (error) {
+        console.log("Failed to load India states/districts dataset:", error);
+    }
+}
+loadIndiaData();
+
+function updateScopeVisibility() {
+    const isIndia = countrySelect.value === "IN";
+    stateSelect.classList.toggle("is-hidden", !isIndia);
+    districtSelect.classList.toggle("is-hidden", !isIndia);
+    if (!isIndia) {
+        stateSelect.value = "";
+        districtSelect.innerHTML = "";
+    }
+}
+updateScopeVisibility();
+
+countrySelect.addEventListener("change", function () {
+    updateScopeVisibility();
+    suggestionMap = new Map();
+    cityListEl.innerHTML = "";
+    cityInput.value = "";
+});
+
+stateSelect.addEventListener("change", function () {
+    populateDistrictDropdown(stateSelect.value);
+    suggestionMap = new Map();
+    cityListEl.innerHTML = "";
+    cityInput.value = "";
+});
+
+districtSelect.addEventListener("change", function () {
+    suggestionMap = new Map();
+    cityListEl.innerHTML = "";
+    cityInput.value = "";
+});
 
 function selectedCountry() {
     const country = COUNTRIES.find(c => c.code === countrySelect.value);
     return country || COUNTRIES[0];
+}
+
+// Builds the geocoding query string based on current scope selections.
+// India + District: "text, District, State, IN"
+// India + State only: "text, State, IN"
+// India, no state:    "text, IN"
+// Foreign country:    "text, CC"
+function buildScopedQuery(text) {
+    const countryCode = selectedCountry().code;
+
+    if (countryCode === "IN") {
+        const state = stateSelect.value;
+        const district = districtSelect.value;
+        const scopeParts = [text, district, state, "IN"].filter(Boolean);
+        return scopeParts.join(", ");
+    }
+
+    return `${text}, ${countryCode}`;
 }
 
 // Live suggestion cache: label (lowercase) -> { label, lat, lon }
@@ -116,10 +215,8 @@ function debounce(fn, delay) {
     };
 }
 
-// Fetches candidate places for whatever's typed, scoped to the
-// currently selected country via the Geocoding API's country code.
-async function fetchSuggestions(query, countryCode) {
-    const scopedQuery = `${query},${countryCode}`;
+async function fetchSuggestions(query) {
+    const scopedQuery = buildScopedQuery(query);
     const url =
         `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(scopedQuery)}&limit=8&appid=${apiKey}`;
 
@@ -128,16 +225,25 @@ async function fetchSuggestions(query, countryCode) {
         if (!response.ok) return [];
         const results = await response.json();
 
+        const countryCode = selectedCountry().code;
+        const countryName = selectedCountry().name;
         const suggestions = [];
         const seen = new Set();
 
         results.forEach(result => {
-            // Safety check: only keep results actually in the selected country
             if (result.country !== countryCode) return;
 
             const { name, state, lat, lon } = result;
-            const countryDisplayName = (COUNTRIES.find(c => c.code === countryCode) || {}).name || countryCode;
-            const label = state ? `${name}, ${state}, ${countryDisplayName}` : `${name}, ${countryDisplayName}`;
+
+            let label;
+            if (countryCode === "IN") {
+                const parts = [name, districtSelect.value, state || stateSelect.value, "India"]
+                    .filter(Boolean);
+                const deduped = parts.filter((p, i) => i === 0 || p.toLowerCase() !== parts[i - 1].toLowerCase());
+                label = deduped.join(", ");
+            } else {
+                label = state ? `${name}, ${state}, ${countryName}` : `${name}, ${countryName}`;
+            }
 
             const key = label.toLowerCase();
             if (seen.has(key)) return;
@@ -173,25 +279,12 @@ const handleTyping = debounce(async function () {
         return;
     }
 
-    const suggestions = await fetchSuggestions(typed, selectedCountry().code);
+    const suggestions = await fetchSuggestions(typed);
     renderSuggestions(suggestions);
 }, 350);
 
 cityInput.addEventListener("input", handleTyping);
 
-// Re-run suggestions (and clear stale ones) whenever the country changes
-countrySelect.addEventListener("change", function () {
-    suggestionMap = new Map();
-    cityListEl.innerHTML = "";
-    if (cityInput.value.trim().length >= 2) {
-        handleTyping();
-    }
-});
-
-// Resolves whatever's currently typed to a real place within the
-// selected country. Prefers an exact match against the live suggestion
-// cache (fast path); falls back to a fresh lookup if the user typed
-// fast and hit Search before the debounce fired.
 async function resolveTypedLocation(rawInput) {
     const typed = rawInput.trim();
     if (typed === "") return { status: "empty" };
@@ -199,8 +292,7 @@ async function resolveTypedLocation(rawInput) {
     const cached = suggestionMap.get(typed.toLowerCase());
     if (cached) return { status: "ok", location: cached };
 
-    const countryCode = selectedCountry().code;
-    const suggestions = await fetchSuggestions(typed, countryCode);
+    const suggestions = await fetchSuggestions(typed);
 
     if (suggestions.length === 0) {
         return { status: "not_found" };
@@ -257,7 +349,6 @@ function showToast(message, type = "error") {
     toast.appendChild(text);
     toastStack.appendChild(toast);
 
-    // Trigger enter transition
     requestAnimationFrame(function () {
         toast.classList.add("is-visible");
     });
@@ -280,6 +371,8 @@ function setLoading(isLoading) {
     searchBtn.disabled = isLoading;
     locationBtn.disabled = isLoading;
     countrySelect.disabled = isLoading;
+    stateSelect.disabled = isLoading;
+    districtSelect.disabled = isLoading;
 }
 
 searchBtn.addEventListener("click", async function () {
@@ -295,10 +388,12 @@ searchBtn.addEventListener("click", async function () {
     const result = await resolveTypedLocation(typed);
     setLoading(false);
 
-    const countryName = selectedCountry().name;
+    const scopeLabel = selectedCountry().code === "IN"
+        ? [districtSelect.value, stateSelect.value, "India"].filter(Boolean).join(", ")
+        : selectedCountry().name;
 
     if (result.status === "not_found") {
-        showToast(`No results found for "${typed}" in ${countryName}. Please check the spelling and try again.`);
+        showToast(`No results found for "${typed}" in ${scopeLabel}. Please check the spelling and try again.`);
         return;
     }
 
@@ -322,9 +417,9 @@ locationBtn.addEventListener("click", function () {
             showPosition,
             showLocationError,
             {
-                enableHighAccuracy: true, // use real GPS, not coarse cell/Wi-Fi triangulation
-                timeout: 15000,           // fail after 15s instead of hanging indefinitely
-                maximumAge: 0             // don't reuse a stale cached fix
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
             }
         );
 
@@ -336,13 +431,10 @@ locationBtn.addEventListener("click", function () {
 
 });
 
-// Press Enter to Search
 cityInput.addEventListener("keypress", function (event) {
-
     if (event.key === "Enter") {
         searchBtn.click();
     }
-
 });
 
 function renderWeather(data) {
@@ -400,9 +492,6 @@ function renderWeather(data) {
 
 }
 
-// Takes a resolved { label, lat, lon } location — already validated
-// against the selected country — and fetches its weather directly by
-// coordinates (no extra geocoding round-trip needed).
 async function getWeather(location) {
 
     setLoading(true);
@@ -421,9 +510,6 @@ async function getWeather(location) {
             return;
         }
 
-        // Use our own resolved label so display stays consistent
-        // (e.g. "Kasauli, Himachal Pradesh, India" rather than whatever
-        // the weather API happens to return for that station).
         data.name = location.label;
 
         renderWeather(data);
@@ -475,39 +561,93 @@ function showLocationError(error) {
 
 }
 
-// Geolocation ("My Location") queries by exact GPS coordinates — that's
-// not free-text input, so it's unaffected by the country dropdown and
-// always reflects the user's real position, wherever that is.
+// Geolocation ("My Location") uses TWO reverse-geocoding sources and
+// combines them for the most accurate + complete label:
+//   1. OpenWeather reverse geocoding — usually gives the most accurate
+//      local place name for the exact GPS point (e.g. "Manchar").
+//   2. Nominatim (OpenStreetMap) reverse geocoding — gives structured
+//      admin fields (taluka/sub-district, district, state, country)
+//      that OpenWeather doesn't provide.
+// Final label = OpenWeather's place name + Nominatim's admin fields.
 async function getWeatherByLocation(latitude, longitude) {
-
-    const url =
-        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
 
     try {
 
-        const response = await fetch(url);
+        // --- Source 1: OpenWeather reverse geocoding (place name) ---
+        let owmCityName = "";
+        try {
+            const owmGeoUrl =
+                `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${apiKey}`;
+            const owmGeoRes = await fetch(owmGeoUrl);
+            const owmGeoData = await owmGeoRes.json();
+            if (owmGeoData && owmGeoData.length > 0) {
+                owmCityName = owmGeoData[0].name || "";
+            }
+        } catch (e) {
+            console.log("OpenWeather reverse geocoding failed:", e);
+        }
 
-        const data = await response.json();
+        // --- Source 2: Nominatim reverse geocoding (admin details) ---
+        let adminParts = [];
+        try {
+            const nominatimUrl =
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
+            const nomResponse = await fetch(nominatimUrl, {
+                headers: { "Accept-Language": "en" }
+            });
+            const nomData = await nomResponse.json();
+            const a = nomData.address || {};
 
-        if (response.ok === false) {
+            // Nominatim's own best guess at the place name, used only if
+            // OpenWeather didn't give us one.
+            const nomPlaceName =
+                a.village || a.hamlet || a.town || a.city_village ||
+                a.suburb || a.municipality || a.city || "";
+
+            const taluka   = a.county || (a.town && a.town !== nomPlaceName ? a.town : "");
+            const district = a.state_district || "";
+            const state    = a.state || "";
+            const country  = a.country || "";
+
+            adminParts = [owmCityName || nomPlaceName, taluka, district, state, country]
+                .map(p => (p || "").trim())
+                .filter(Boolean);
+
+            // Drop consecutive duplicate parts (case-insensitive)
+            adminParts = adminParts.filter(
+                (p, i) => i === 0 || p.toLowerCase() !== adminParts[i - 1].toLowerCase()
+            );
+        } catch (nomErr) {
+            console.log("Nominatim reverse geocoding failed:", nomErr);
+        }
+
+        const fullLabel = adminParts.length > 0
+            ? adminParts.join(", ")
+            : (owmCityName || "Your Location");
+
+        // --- Weather data from OpenWeather by coordinates ---
+        const weatherUrl =
+            `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+
+        const weatherResponse = await fetch(weatherUrl);
+        const data = await weatherResponse.json();
+
+        if (!weatherResponse.ok) {
             showToast(data.message || "Unable to get location weather.");
             return;
         }
 
+        data.name = fullLabel;
+
         renderWeather(data);
         showToast(`Forecast updated for ${data.name}`, "success");
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.log(error);
-
         showToast("Unable to get location weather.");
 
-    }
-
-    finally {
+    } finally {
 
         setLoading(false);
 
