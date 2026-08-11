@@ -39,11 +39,22 @@
             <!-- Search Section -->
             <div class="search-box">
 
+                <!-- Country scope: India = every city/town/village via live
+                     geocoding, any other option = the popular countries
+                     list, scoped to just that country. Populated from
+                     COUNTRIES in script.js so there's one source of truth. -->
+                <select id="country" aria-label="Country"></select>
+
                 <input
                     type="text"
                     id="city"
-                    placeholder="Search a city&hellip;"
-                    autocomplete="off">
+                    placeholder="Search a city or village&hellip;"
+                    autocomplete="off"
+                    list="city-list">
+
+                <!-- Populated dynamically from live geocoding results,
+                     scoped to whichever country is selected above. -->
+                <datalist id="city-list"></datalist>
 
                 <button id="search-btn">
                     Search
@@ -66,7 +77,6 @@
                             <span class="ring ring-2"></span>
                             <span class="ring ring-3"></span>
                             <span class="sweep"></span>
-                            
                         </div>
 
                         <img
