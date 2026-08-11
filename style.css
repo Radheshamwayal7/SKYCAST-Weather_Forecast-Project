@@ -280,9 +280,13 @@ body {
 #city-name {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 26px;
+    font-size: clamp(15px, 3vw, 26px);
     color: var(--ink-100);
     margin-top: 12px;
+    line-height: 1.3;
+    text-align: center;
+    word-break: break-word;
+    max-width: 560px;
 }
 
 #date-time {
