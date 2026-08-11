@@ -39,11 +39,17 @@
             <!-- Search Section -->
             <div class="search-box">
 
-                <!-- Country scope: India = every city/town/village via live
-                     geocoding, any other option = the popular countries
-                     list, scoped to just that country. Populated from
-                     COUNTRIES in script.js so there's one source of truth. -->
+                <!-- Country: India = real State/District dataset below,
+                     Foreign = a curated popular-countries list. -->
                 <select id="country" aria-label="Country"></select>
+
+                <!-- State dropdown — only shown/populated when India is
+                     selected. Loaded from india-states-districts.json,
+                     a real dataset of all 35 states/UTs + 722 districts. -->
+                <select id="state" aria-label="State" class="is-hidden"></select>
+
+                <!-- District dropdown — populated based on selected state. -->
+                <select id="district" aria-label="District" class="is-hidden"></select>
 
                 <input
                     type="text"
@@ -53,7 +59,7 @@
                     list="city-list">
 
                 <!-- Populated dynamically from live geocoding results,
-                     scoped to whichever country is selected above. -->
+                     scoped to the selected country/state/district. -->
                 <datalist id="city-list"></datalist>
 
                 <button id="search-btn">
